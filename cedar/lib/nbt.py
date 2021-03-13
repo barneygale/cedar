@@ -54,18 +54,22 @@ class BaseTag(object):
                 # the dict (Since a compound cannot have repeating names,
                 # this works fine).
                 tmp = _tags[tag].read(read)
-                final[tmp.name] = tmp
+                if tmp is not None:
+                    final[tmp.name] = tmp
             return cls(final, name=name)
         elif cls is TAG_List:
             # A TAG_List is a very simple homogeneous array, similar to
             # Python's native list() object, but restricted to a single type.
             tag_type, length = read('bi', 5)
-            tag_read = _tags[tag_type].read
-            return cls(
-                _tags[tag_type],
-                [tag_read(read, has_name=False) for x in range(0, length)],
-                name=name
-            )
+            if tag_type != 0:
+                tag_read = _tags[tag_type].read
+                return cls(
+                    _tags[tag_type],
+                    [tag_read(read, has_name=False) for x in range(0, length)],
+                    name=name
+                )
+            else:
+                return None
         elif cls is TAG_String:
             # A simple length-prefixed UTF-8 string.
             value = cls._read_utf8(read)
