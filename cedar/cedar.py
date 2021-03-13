@@ -53,6 +53,11 @@ class Cedar:
             source.close()
             dest.close()
 
+            #Auto validating EULA
+            self.log(1, 'Auto validating EULA')
+            with open('eula.txt', 'w') as eula:
+                eula.write('eula={ebval}'.format(ebval='true'))
+
             #Write server.properties
             self.log(1, 'writing server.properties')
             with open('server.properties', 'w') as props:
@@ -117,4 +122,4 @@ class Cedar:
 
     def log(self, level, msg):
         if self.verbosity >= level:
-            print "... {0}".format(msg)
+            print("... {0}".format(msg))
