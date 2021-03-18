@@ -2,7 +2,7 @@ import os
 import re
 import zipfile
 
-from lib.png import Reader
+from .lib.png import Reader
 
 class BlockColours(dict):
     def __init__(self):
@@ -33,7 +33,7 @@ class BlockColours(dict):
         self[(i, m)][0] = c
 
     def load_from_jar(self, jar):
-        for k, v in self.iteritems():
+        for k, v in self.items():
             if v[1] == '-':
                 continue
 
@@ -65,7 +65,7 @@ class BlockColours(dict):
             f.write(out)
 
     def make_safe(self):
-        return { '{0},{1}'.format(*k) : v[0] for k, v in self.iteritems() }
+        return { '{0},{1}'.format(*k) : v[0] for k, v in self.items() }
 
 
 #TODO: move this somewhere nice
@@ -78,4 +78,4 @@ if __name__ == '__main__':
         colours.load_from_jar(jar)
         colours.save()
     else:
-        print "usage: python blocks.py /path/to/minecraft.jar"
+        print("usage: python blocks.py /path/to/minecraft.jar")

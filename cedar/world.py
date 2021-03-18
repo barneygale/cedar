@@ -2,12 +2,9 @@ import gzip
 import struct
 import zlib
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import BytesIO
 
-from lib.nbt import NBTFile
+from pynbt import NBTFile
 
 class World:
     leveldat = 'world/level.dat'
@@ -70,7 +67,7 @@ class World:
                     c_data = zlib.decompress(c_data)
 
                     #Load
-                    c_nbt = NBTFile(io=StringIO(c_data))['Level']
+                    c_nbt = NBTFile(io=BytesIO(c_data))['Level']
                     c_heightmap = c_nbt['HeightMap'].value
                     c_biomes = c_nbt['Biomes'].value
                     c_sections = {s['Y'].value: s for s in c_nbt['Sections']}
