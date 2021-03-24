@@ -23,7 +23,7 @@ class BaseTag(object):
     def _read_utf8(read):
         """Reads a length-prefixed UTF-8 string."""
         name_length = read('h', 2)[0]
-        return read.io.read(name_length).decode('utf-8')
+        return read.io[:name_length]#.decode('utf-8')
 
     @staticmethod
     def _write_utf8(write, value):
@@ -54,18 +54,22 @@ class BaseTag(object):
                 # the dict (Since a compound cannot have repeating names,
                 # this works fine).
                 tmp = _tags[tag].read(read)
-                final[tmp.name] = tmp
+                if tmp is not None:
+                    final[tmp.name] = tmp
             return cls(final, name=name)
         elif cls is TAG_List:
             # A TAG_List is a very simple homogeneous array, similar to
             # Python's native list() object, but restricted to a single type.
             tag_type, length = read('bi', 5)
-            tag_read = _tags[tag_type].read
-            return cls(
-                _tags[tag_type],
-                [tag_read(read, has_name=False) for x in range(0, length)],
-                name=name
-            )
+            if tag_type != 0:
+                tag_read = _tags[tag_type].read
+                return cls(
+                    _tags[tag_type],
+                    [tag_read(read, has_name=False) for x in range(0, length)],
+                    name=name
+                )
+            else:
+                return None
         elif cls is TAG_String:
             # A simple length-prefixed UTF-8 string.
             value = cls._read_utf8(read)
@@ -115,7 +119,7 @@ class BaseTag(object):
                     item = self.type_(item)
                 item.write(write)
         elif isinstance(self, TAG_Compound):
-            for v in self.value.values():
+            for v in list(self.value.values()):
                 v.write(write)
                 # A tag of type 0 (TAg_End) terminates a TAG_Compound.
             write('b', 0)
@@ -160,7 +164,7 @@ class BaseTag(object):
         return repr(self)
 
     def __unicode__(self):
-        return unicode(repr(self), 'utf-8')
+        return str(repr(self), 'utf-8')
 
 
 class TAG_Byte(BaseTag):
@@ -236,7 +240,7 @@ class TAG_Compound(BaseTag, dict):
         t.append('{0}TAG_Compound({1!r}): {2} entries'.format(
             indent_str * indent, self.name, len(self.value)))
         t.append('{0}{{'.format(indent_str * indent))
-        for v in self.values():
+        for v in list(self.values()):
             t.append(v.pretty(indent + 1, indent_str))
         t.append('{0}}}'.format(indent_str * indent))
         return '\n'.join(t)
@@ -258,7 +262,7 @@ class TAG_Compound(BaseTag, dict):
     def update(self, *args, **kwargs):
         """See `__setitem__`."""
         super(TAG_Compound, self).update(*args, **kwargs)
-        for key, item in self.items():
+        for key, item in list(self.items()):
             if item.name is None:
                 item.name = key
 
@@ -309,10 +313,10 @@ class NBTFile(TAG_Compound):
         # without any kind of header we can't determine that ourselves,
         # not even a magic number we could flip.
         if little_endian:
-            read = lambda fmt, size: unpack('<' + fmt, io.read(size))
+            read = lambda fmt, size: unpack('<' + fmt, io[:size])
         else:
-            read = lambda fmt, size: unpack('>' + fmt, io.read(size))
-        read.io = io
+            read = lambda fmt, size: unpack('>' + fmt, io[:size])
+        read.io = bytearray(io)
 
         # All valid NBT files will begin with 0x0A, which is a TAG_Compound.
         if read('b', 1)[0] != 0x0A:

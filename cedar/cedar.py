@@ -6,15 +6,15 @@ import shutil
 import contextlib
 
 #jar downloader
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 
 #cedar code
-from blocks import BlockColours
-from spiral import Spiral
-from world import World
-from wrapper import Wrapper
-from lib.png import Writer
+from .blocks import BlockColours
+from .spiral import Spiral
+from .world import World
+from .wrapper import Wrapper
+from .lib.png import Writer
 
 
 @contextlib.contextmanager
@@ -52,6 +52,11 @@ class Cedar:
             dest.write(source.read())
             source.close()
             dest.close()
+
+            #Auto validating EULA
+            self.log(1, 'Auto validating EULA')
+            with open('eula.txt', 'w') as eula:
+                eula.write('eula={ebval}'.format(ebval='true'))
 
             #Write server.properties
             self.log(1, 'writing server.properties')
@@ -108,13 +113,13 @@ class Cedar:
         base = 'http://s3.amazonaws.com/Minecraft.Download/versions/'
 
         #get version
-        data = urllib2.urlopen(base + 'versions.json').read()
+        data = urllib.request.urlopen(base + 'versions.json').read()
         data = json.loads(data)
         version = data['latest']['release']
 
         #get server
-        return urllib2.urlopen(base + '{0}/minecraft_server.{0}.jar'.format(version))
+        return urllib.request.urlopen(base + '{0}/minecraft_server.{0}.jar'.format(version))
 
     def log(self, level, msg):
         if self.verbosity >= level:
-            print "... {0}".format(msg)
+            print(("... {0}".format(msg)))

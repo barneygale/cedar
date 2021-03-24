@@ -15,7 +15,8 @@ class Wrapper:
                 stdout = subprocess.PIPE,
                 stderr = subprocess.STDOUT,
                 bufsize = 1,
-                close_fds = True)
+                close_fds = True,
+                universal_newlines=True)
         except OSError as e:
             self.log(0, "error: couldn't start java: {0}".format(e))
             raise SystemExit(1)

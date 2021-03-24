@@ -47,7 +47,7 @@ def main(args):
     while len(args) > 0:
         a_name = args.pop(0)
         if a_name in ('-h', '--help'):
-            print help_text
+            print(help_text)
             return
         elif a_name.startswith('--'):
             if a_name[2:] in config:
@@ -80,5 +80,5 @@ if __name__ == '__main__':
     import sys
     try:
         main(sys.argv[1:])
-    except CedarStartupException, e:
-        print "cedar: {0}".format(e)
+    except CedarStartupException as e:
+        print("cedar: {0}".format(e))
